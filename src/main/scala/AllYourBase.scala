@@ -1,19 +1,10 @@
-import scala.annotation.tailrec
-
 object AllYourBase:
    def rebase(fromBase: Int, number: List[Int], toBase: Int): Option[List[Int]] =
-      if fromBase <= 1 || toBase <= 1 || number.exists(n => n < 0 || n >= fromBase) then None
-      else if number.isEmpty then Some(List(0))
+      if fromBase < 2 || toBase < 2 || number.exists(x => x < 0 || x >= fromBase) then None
       else
-         val decimalValue = number.zipWithIndex.map { case (digit, index) =>
-            digit * math.pow(fromBase, number.length - 1 - index).toInt
-         }.sum
-
-         @tailrec
-         def fromDec(n: Int, rem: List[Int]): List[Int] =
-            if n == 0 && rem.isEmpty then List(0)
-            else if n == 0 then rem
-            else fromDec(n / toBase, (n % toBase) :: rem)
-
-         if toBase == 10 then Some(decimalValue.toString.map(_.asDigit).toList)
-         else Some(fromDec(decimalValue, Nil))
+         val decimal =
+            number.reverse.zipWithIndex.map { case (digit, index) => digit * math.pow(fromBase, index) }.sum.toInt
+         def convertToBase(value: Int, base: Int): List[Int] =
+            if value <= 0 then Nil
+            else (value % base) :: convertToBase(value / base, base)
+         Some(convertToBase(decimal, toBase).reverse).filter(_.nonEmpty).orElse(Some(List(0)))
